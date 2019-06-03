@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1, shrink-to-fit=no">
+<title>SECRET Wallet</title>
+<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/menu.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous"-->
+
+<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script-->
+<script src="js/jquery/jquery-3.4.1.min.js"></script>
+<script src="js/bootstrap/bootstrap.min.js"></script>
+
+<script src="js/pincode/jquery.pinlogin.js"></script>
+<link href="css/pincode/jquery.pinlogin.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="js/qrcode/jquery.qrcode.js"></script>
+<script type="text/javascript" src="js/qrcode/qrcode.js"></script>
+
+<script type="text/javascript" src="js/crypto/core.min.js"></script>
+<script type="text/javascript" src="js/crypto/sha256.min.js"></script>
+<script src="js/wallet-login.js"></script>
+<script src="js/wallet-common.js"></script>
+
+<style type="text/css">
+	.panel-title {
+        font-size: 14px;
+ 
+	}
+	.panel-title > a {
+		display: block;
+        padding: 5px;
+        background-color: lightskyblue ;
+        text-decoration: none;
+        color: #212121;
+	}
+
+	.more-less {
+		float: right;
+    /*	color: #212121;
+        color: #eeeeee;*/
+    }
+    .panel-default > .panel-heading + .panel-collapse > .panel-body {
+		border-top-color: #eeeeee;
+	}
+</style>
+
+</head>
+<body>
+<script>
+    
+    if (typeof sessionStorage.username == 'undefined') {
+        gotoLoginPage();
+    }      
+
+        
+    var EOA_ADDR=sessionStorage.address;
+
+    //custom function handler
+    $(document).ready(function(){
+        if( sessionStorage.AuthYn == 'N'){
+            if(sessionStorage.pin == null || sessionStorage.pin.length < 6){
+                alert("You should set PIN number");
+                show_pinModal();
+            }
+            else {
+                alert("After authentication, you can use this wallet!");
+                show_AuthModal();
+            }
+
+        }
+        else {
+            if(sessionStorage.pin == null || sessionStorage.pin.length < 6){
+                alert("You should set PIN number");
+                show_pinModal();
+            }
+        }
+
+        Send2Server("BALANCE-CHECK");
+
+        jQuery('#QRDiv').qrcode({
+            render	: "table",
+            width : 200,
+            height : 200,
+            text	: EOA_ADDR
+        });	
+        $('#ADDR_DATA').text(EOA_ADDR);
+
+
+        ////////////////////
+        $('#MAIN_NAME_DATA').text(sessionStorage.email);
+        $('#menu-user-name').text(sessionStorage.username);
+        $('#menu-user').css("display", "inline");        
+    }); 
+    function toggleIcon(e) {
+        $(e.target)
+            .prev('.panel-heading')
+            .find('.more-less')
+            .toggleClass('fa-plus fa-minus');
+        }
+        $('#accordion').on('hidden.bs.collapse', toggleIcon);
+        $('#accordion').on('shown.bs.collapse', toggleIcon);
+
+
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        // copy the selection
+        var succeed;
+        try {
+            succeed = document.execCommand("copy");
+            alert("success to copy address\n\r"+$(element).text());
+        } 
+        catch(e) {
+            succeed = false;
+            alert("failed to Copy address\n\r"+$(element).text());
+        }
+        $temp.remove();
+
+    }
+    // var obj = Object.keys(sessionStorage).reduce(function(obj, key) {
+    // obj[key] = localStorage.getItem(key);
+    // return obj
+    // }, {});
+
+    // console.log(obj);
+    // var obj = Object.keys(localStorage).reduce(function(obj, key) {
+    // obj[key] = localStorage.getItem(key);
+    // return obj
+    // }, {});
+
+    // console.log(obj);
+
+</script>
+
+<div class="secret-navbar">
+    <nav class="navbar navbar-expand-md navbar-light" >
+        <!--nav class="navbar navbar-expand-md navbar-light bg-light"-->
+        <a href="http://mitmessenger.com" class="navbar-brand">
+            <img src="./img/secret-logo.png" height="25" width="170" alt="SECRET">
+        </a>
+        <a href="#" class="nav-item nav-link active" style="color:#bbbbbb" onClick="gotoMainPage();"><i class="fa fa-home fa-lg" aria-hidden="true" ></i>&nbsp; Home</a>
+
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse" style="color:#ffffff;background-color: #bbbbbb;" >
+            <span class="navbar-toggler-icon" ></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse" >
+            <div class="navbar-nav " style="margin-right: 20px;" >
+                <!--a href="#" class="nav-item nav-link active" style="color:#bbbbbb" onClick="gotoMainPage();"><i class="fa fa-home fa-lg" aria-hidden="true"></i>&nbsp; Home</a-->
+                <!--a href="#" class="nav-item nav-link" style="color:#bbbbbb">공지사항</a-->
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" style="color:#bbbbbb">Lang</a>
+                    <div class="dropdown-menu  dropdown-menu-right" style="color:#ffbbbb">
+                        <a href="#" class="dropdown-item" onClick="MyLang('eng');">English</a>
+                        <a href="#" class="dropdown-item" onClick="MyLang('kor');">Korea</a>
+                        <a href="#" class="dropdown-item" onClick="MyLang('vet');">Vetenam</a>
+                    </div>
+                </div>
+                <div id="menu-user" class="nav-item dropdown" style="display:none;">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" style="color:#bbbbbb"><i class="fa fa-user "><label id="menu-user-name">@user</label></i></a>
+                    <div class="dropdown-menu  dropdown-menu-right" style="color:#ffbbbb">
+                        <a href="#" class="dropdown-item" >Reset Password</a>
+                        <a href="#" class="dropdown-item" >Reset PIN</a>
+                        <a href="#" class="dropdown-item" onClick="SecretTerms();">Terms and Conditions</a>
+                        <hr>
+                        <a href="#" class="dropdown-item" onClick="logout();" >Logout</a>
+                    </div>
+                </div>
+
+            </div>
+            <!--div class="navbar-nav ml-auto">
+                <a href="#" class="nav-item nav-link"  style="color:#bbbbbb">Login</a>
+            </div-->
+        </div>
+    </nav>
+</div>
+<div class="secret-body" >
+    <div class="d-flex justify-content-center align-items-center container"  >
+        <div class="row" class="panel-dashboard" >
+            <div class="panel-heading col-sm-12" style="text-align: center;background-color: #4285F4">
+                <label id="mywallet-title" style="color: white;font-size:18px;font-weight: bolder;text-align: center;">My Wallet</label>
+            </div>
+            <!--hr class="col" style="margin:10px; border: 0.3px solid #bbbbbb;"-->
+
+            <div class="panel-body" style="margin-left:0;margin-right:0;margin-top:2px; padding:0;">
+                <div class="row no-gutters" style="padding:5px;margin:0;background-color: #eeeeee;">
+                    <div class="col-sm-12"  style="margin-top:0;margin-left:5px;margin-right:5px;padding:0;">
+                        <div class="row justify-content-between" style="padding:0;margin:0;">
+                            <div >
+                                    <i class="fa fa-user" aria-hidden="true"></i>
+                                    <label id="MAIN_NAME_TITLE" style="margin-right:5px;padding:0;font-size: 18px; font-weight: bold;">e-Mail:</label>
+                                    <label id="MAIN_NAME_DATA" style="margin-right:10px;font-size: 18px;" >user</label>            
+                            </div>
+                            <!--div>
+                                    <i class="fa fa-qrcode mr-auto" aria-hidden="true"  onclick="show_QRCode('#ADDR_DATA');"></i>
+                            </div-->
+                        </div>
+                    </div>
+                </div>
+          
+                <div class="panel-group" id="accordion" style="margin-top: 5px;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
+                                    <i class="more-less fa fa-minus" style="float: right;"></i>
+                                    Get COIN
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse1" class="panel-collapse collapse show">
+                            <div class="panel-body">
+                                <div class="row justify-content-between" style="padding:0;margin-left:5px;margin-right:10px;">
+                                    <div style = "text-align:center;">
+                                        <label id="ADDR_DATA" style="margin-left:10px;font-size: 12px; font-weight: bold;cursor:pointer;" onclick="copyToClipboard('#ADDR_DATA');">ADDR</label>
+                                    </div>
+                                    <div>
+                                        <!--i class="far fa-copy"></i-->
+                                        <i class="fa fa-files-o mr-auto" aria-hidden="true" style="cursor:pointer;" onclick="copyToClipboard('#ADDR_DATA');"></i>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center" style="text-align:center;margin-top:0px;margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-outline-info btn-rounded btn-sm" onclick="copyToClipboard('#ADDR_DATA');">Copy</button>
+                                </div>
+                                <div class="row justify-content-center" style="margin-top:10px;margin-bottom: 10px;">
+                                    <div id="QRDiv" style="display: inline-block;vertical-align:middle; text-align:center;margin:auto;"></div>                    
+                                </div>    
+                            </div>
+                        </div>
+                    </div>
+                    <!--div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
+                                    <i class="more-less fa fa-plus" style="float: right;"></i>
+                                    Send COIN
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse2" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+                                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            </div>
+                        </div>
+                    </div-->
+                </div> 
+                <div style="display: block;background-color:lightskyblue;padding:0;height:25px;">
+                    <label id="SEND-COIN-TITLE" style="margin-left:5px;font-size: 14px; font-weight: bold;">View COIN</label></div>
+                <div class="row" style ="padding:0;margin-top: 10px;margin-left: 5px;margin-right: 5px;">
+                    <div class="col-sm-12 input-group" style="margin:0;padding:0;" onclick="gotoViewPage('SECRET');">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" style="width:90px">
+                                    <img src="img/icon-secret.png" alt="secret token" style="width:20px;"/>
+                                    <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">SECRET</label>
+                                </span>                    
+                            </div>
+                            <input type="text"  id="SECRET_Balance" class="form-control" value="0.00"  style="font-size:20px;font-size:18px;text-align: right;background-color:#fff;" disabled>
+                            <div class="input-group-append">
+                                <!--span class="input-group-text">3:00</span-->
+                                <button type="button" class="btn btn-primary" style="width:60px;text-align:center;"  onclick="gotoViewPage('SECRET');">View</button>
+                            </div>
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 10px;" onclick="gotoViewPage('ETHER');">
+                        <div class="input-group-prepend">
+                                <span class="input-group-text" style="width:90px">
+                                    <img src="img/icon-ethereum.png" alt="secret token" style="width:20px;"/><br>
+                                    <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Ethereum</label>
+                                </span>                    
+                            </div>
+                        <input type="text" id="ETHER_Balance" class="form-control"  value="0.00" style="font-size:20px;font-size:18px;text-align: right;background-color:#fff;" disabled>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-primary" style="width:60px;text-align:center;"  onclick="gotoViewPage('Ethereum');">View</button>
+                        </div>
+                    </div>
+                </div>               
+            </div>
+        </div>
+    </div>
+<br>
+</div>
+<footer class="secret-footer fixed-bottom ">
+
+        <!-- Copyright -->
+        <div class="footer-copyright text-center py-2" style="z-index: 1;">&nbsp;&nbsp;© 2018 Copyright:
+        <a href="http://mitmessenger.com" style="color:#ffffff;">SECRET Messenger</a> <br> ANSON ROAD #23-14S INTERNATIONAL PLAZA SINGAPORE (079903)
+        </div>
+        <!-- Copyright -->
+    
+</footer>
+
+
+ 
+
+<!-- Modal HTML for legacy wallet user: 기존에 가입자는 PIN번호가 없으니 받도록-->
+<div id="pinModal" class="modal fade pin-container" tabindex="-1" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label class="modal-title"style = "text-align:center;">Register PIN Number</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div class="col-sm-10 offset-sm-2" >
+                    <i class="fa fa-pencil-square-o" style="font-size:20px;"> Enter 6 DIGIT PIN Code</i>
+                </div>
+                <div id="registerpin" style="display: flex; justify-content:center;margin-top:5px;"></div>
+                <!--div style="margin-left: 30px;">                 
+                    <input type="text" id="pincode-input1" width=100%>
+                </div--> 
+                <br>
+
+                <div class="col-sm-10 offset-sm-2">
+                    <i class="fa fa-pencil-square-o" style="font-size:20px;"> Re-Enter PIN code</i>
+                </div>
+                <!--div style="margin-left: 30px;">                    
+                    <input type="text" id="pincode-input2">
+                </div-->
+                <div id="registerpinretype" style="display: flex; justify-content:center;margin-top:5px;"></div>
+            </div>
+        </div>
+    </div>
+</div>  
+<!-- Modal HTML for legacy wallet user: 기존에 가입한 사람중에 Auth안받은 사람들 받도록-->
+<div id="AuthModal" class="modal fade " tabindex="-1" >
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label class="modal-title"style = "text-align:center;">E-Mail Authentication</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <!--div class="modal-body">
+                <p> You should authenticate by your email...</p>
+                <p class="text-secondary"><small>If you don't authenticate, you cannot use this wallet.</small></p>
+            </div-->
+            <div class ="modal-body">
+                <div class="col-sm-12" style="font-size:20px;">
+                    <i class="fa fa-envelope" > E-mail</i>
+                </div>
+                <div class="col-sm-12 input-group" >
+                    <!--div class="input-group-prepend">
+                        <span class="input-group-text" >
+                            <span class="fa fa-envelope" style="width:10px;font-size:12px;"></span>
+                        </span>                    
+                    </div-->
+                    <input id="r2-email" type="text" class="form-control py-1"  style="font-size:20px;"  placeholder="E-mail" value="" disabled>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-dark" style="width:60px;text-align:center;" onclick="email_auth_send()">Send</button>
+                    </div>
+                </div>
+                <div class="col-sm-12" style="font-size:20px;">
+                        <i class="fa fa-pencil-square-o" style="margin-top: 20px;"> Enter your code</i>
+                </div>                        
+                <div class="col-sm-12 input-group">
+                        <input id="r2-code" type="text" class="form-control" placeholder="Enter your code"  style="font-size:20px;" >
+                        <div class="input-group-append">
+                            <!--span class="input-group-text">3:00</span-->
+                            <button type="button" class="btn btn-dark" style="width:60px;text-align:center;"onclick="validated_auth_code();">OK</button>
+                        </div>
+
+                </div>
+            </div>
+            <!--div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="register_save();">SAVE</button>
+            </div-->
+        </div>
+    </div>
+</div>    
+
+<!-- Modal HTML 이하 지울 것-->
+<div id="TokenModal" class="modal fade " tabindex="-1" >
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff;">
+                <label class="modal-title" id="TokenModal_title" style = "text-align:center;">Token Info</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div class="row" style ="padding:0;margin-top: 10px;margin-left: 5px;margin-right: 5px;">
+                    <div class="col-sm-12 input-group" style="margin:0;padding:0;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" style="width:90px">
+                                    <img src="img/icon-secret.png" id="TokenModal_Icon" alt="secret token" style="width:20px;"/>
+                                    <label id="TokenModal_Label" style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">SECRET</label>
+                                </span>                    
+                            </div>
+                            <input type="text" id="TokenModal_Balance" class="form-control" placeholder="12345.7890" value="93224.4089"  style="font-size:20px;font-size:18px;text-align: right;background-color:#fff;" disabled>
+                    </div>
+                </div>
+
+                <div class="row justify-content-start" style="margin-top: 20px;margin-left: 2px;margin-right: 2px;">
+                    <div  style="width:20%;margin:0;padding:0;text-align: center;border: 1px solid lightgray;">
+                        <label id="TokenModal_Time" style="font-size: 10px; font-weight: bold;">Time:</label>
+                    </div>
+                    <div  style="width:60%;margin:0;padding:0;text-align: center;border: 1px solid lightgray;">
+                            <label id="TokenModal_Address" style="font-size: 10px; font-weight: bold;">Address:</label>
+                    </div>
+                    <div  style="width:5%;margin:0;padding:0;text-align: center;border: 1px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 8x; font-weight: bold;">IO</label>
+                    </div>
+                    <div  style="width:15%;margin:0;padding:0;text-align: center;border: 1px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 10px; font-weight: bold;">Amount</label>
+                    </div>
+                 </div>
+                 <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px; ">2019.05.12 11:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0x2975733e37F04763fef8428d2448C6f368b90cba</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">I</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">20</label>
+                    </div>
+                </div>
+                <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px; ">2019.05.12 15:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0xb26c20DE800d229dA9038F32A56a3756015c60ed</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">O</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">394</label>
+                    </div>
+                </div>  
+                <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px;">2019.05.12 11:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0x2975733e37F04763fef8428d2448C6f368b90cba</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">I</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">20</label>
+                    </div>
+                </div>
+                <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px; ">2019.05.12 11:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0x2975733e37F04763fef8428d2448C6f368b90cba</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">I</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">20</label>
+                    </div>
+                </div>
+                <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px; ">2019.05.12 15:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0xb26c20DE800d229dA9038F32A56a3756015c60ed</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">O</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">394</label>
+                    </div>
+                </div>  
+                <div class="row justify-content-start" style="margin-top: 0px;margin-left: 2px;margin-right: 2px;">
+                    <div style="width:20%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                        <label id="TokenModal_Time" style="font-size: 9px;">2019.05.12 11:19:20</label>
+                    </div>
+                    <div style="width:60%;margin-left:0px;margin-right:0;padding:0;border: 0px solid lightgray;word-break: break-all;word-wrap: break-word;">
+                            <label id="TokenModal_Address" style="font-size: 9px;">0x2975733e37F04763fef8428d2448C6f368b90cba</label>
+                    </div>
+                    <div style="width:5%;margin:0;padding:0;text-align: center;border: 0px solid lightgray;">
+                            <label id="TokenModal_IO" style="font-size: 9px; ">I</label>
+                    </div>
+                    <div style="width:15%;margin:0;padding:0;text-align: right;border: 0px solid lightgray;">
+                            <label id="TokenModal_Amount" style="font-size: 9px; ">20</label>
+                    </div>
+                </div>                           
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary"  onclick="show_QRCode();">Receive</button>
+                <button type="button" class="btn btn-outline-primary" onclick="send_Token();">Send</button>
+            </div>            
+    
+            <!--div class="modal-body" style="margin-left: 20px;margin-right: 20px; margin-bottom: 20px;padding:0; ">
+                    <div class="row justify-content-around">
+                        <div class="col-sm-6" >
+                            <button type="button" class="btn btn-outline-primary btn-block" onclick="show_QRCode();">
+                                <i class="fa fa-download" aria-hidden="true"></i>
+                                <label id="TokenModal_Receive" style="font-size: 12px; font-weight: bold;">Receive</label>
+                            </button>
+
+                        </div>
+                        <div class="col-sm-6" >
+                            <button type="button" class="btn btn-outline-primary btn-block" onclick="send_Token();">
+                                <i class="fa fa-upload" aria-hidden="true"></i>
+                                <label id="TokenModal_Send" style="font-size: 12px; font-weight: bold;">Send</label>
+                            </button>
+                        </div>
+                    </div>
+            </div-->
+        </div>
+    </div>
+</div>
+  
+<div id="confirmSendPin" class="modal fade pin-container" tabindex="-99" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label class="modal-title"style = "text-align:center;">Your PIN Number</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div class="col-sm-10 offset-sm-2" >
+                    <i class="fa fa-pencil-square-o" style="font-size:20px;"> Enter 6 DIGIT PIN Code</i>
+                </div>
+                <div id="loginpin" style="display: flex; justify-content:center;margin-top:5px;"></div>
+                <!--div style="margin-left: 30px;">                 
+                    <input type="text" id="pincode-input1" width=100%>
+                </div--> 
+                <br>
+            </div>
+        </div>
+    </div>
+</div>                
+
+
+<div id="QRCodeModal" class="modal fade pin-container" tabindex="-1" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label class="modal-title"style = "text-align:center;">Address Info</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div class="row no-gutters" style="padding:0;margin:0;">
+                    <div class="col-sm-12" style="margin-top:0;margin-left:5px;margin-bottom:10px;padding:0;">
+                        <label id="ADDR_DATA2" style="vertical-align:middle; text-align:center;font-size: 11.5px; font-weight: bold;" alt="touch address to copy">ADDR</label>
+                    </div>
+                </div>
+                <!--hr style="margin-top:0px;border:0.5px solid lightgray;"-->
+                <div class="row justify-content-center" style="margin-top:15px;">
+                        <div id="QRDiv2" style="display: inline-block;vertical-align:middle; text-align:center;margin:auto;"></div>                    
+                </div>                    
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="sendModal" class="modal fade pin-container" tabindex="-1" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label id="sendToken_title" class="modal-title"style = "text-align:center;">Send Token</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div style="height:10px;background-color:#eeeeee;"></div>
+                <div class="row no-gutters" style="padding:0;margin:0;background-color: #eeeeee;">
+                    <div class="col-sm-12"  style="margin-top:0;margin-left:5px;padding:0;">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        <label id="sendToken_name-Title" style="margin-right:10px;padding:0;font-size: 18px; font-weight: bold;">Name:</label>
+                        <label id="sendToken_name-Data" style="margin-right:10px;font-size: 18px;" >KMS 홍보관리계정</label>            
+                    </div>
+                    <div class="col-sm-12" style="margin-top:0;margin-left:5px;margin-bottom:10px;padding:0;">
+                        <label id="ADDR_DATA3" style="vertical-align:middle; text-align:center;font-size: 11.5px; font-weight: bold;" alt="touch address to copy">ADDR</label>
+                    </div>
+                </div>
+                
+                <div class="row" style ="padding:0;margin-top: 20px;margin-left: 5px;margin-right: 5px;">
+                    <div class="col-sm-12 input-group" style="margin:0;padding:0;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;">
+                                <img id="sendToken_Icon"  src="img/icon-secret.png" alt="secret token" style="width:20px;"/>
+                                <label id="sendToken_Label" style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">SECRET</label>
+                            </span>                    
+                        </div>
+                        <input id="sendToken_Balance" type="text"   class="form-control" placeholder="12345.7890" value="93224.4089"  style="font-size:18px;text-align: right;background-color:#fff;" disabled>
+                        <!--div class="input-group-append">
+                            <span class="input-group-text">3:00</span>
+                            <button type="button" class="btn btn-primary" style="width:60px;text-align:center;">SEND</button>
+                        </div-->
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px; Height:35px;">
+                                <i class="fa fa-id-badge" aria-hidden="true"></i>
+                                <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Address</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Address" class="form-control" placeholder="put target address"  value="" style="font-size:10px;Height:35px;text-align: right;background-color:#fff;" >
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;font-size:12px;">
+                                <i class="fa fa-money" aria-hidden="true"></i>
+                                <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Amount</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Amount" class="form-control" placeholder="put amount"  value="" style="font-size:18px;text-align: right;background-color:#fff;" >
+                    </div>   
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="auth_pin();">Next</button>
+            </div>            
+        </div>
+    </div>
+</div>              
+
+<script type="text/javascript">
+//var QRCode_gen=false;
+// function show_QRCode(element){
+// //    var QRDATA = $(element).text();
+//     //$('#ADDR_DATA2').text("Address: "+EOA_ADDR);
+//     //alert("show QRCODE: "+EOA_ADDR);
+//     // if(QRCode_gen == false){
+//     //     jQuery('#QRDiv2').qrcode({
+//     //         render	: "table",
+//     //         width : 200,
+//     //         height : 200,
+//     //         text	: EOA_ADDR
+//     //     });	
+//     //     QRCode_gen = true;
+//     // }
+
+//     $('#QRCodeModal').modal({
+//         //backdrop: 'static',
+//         //keyboard: false,
+//         'show':true});    
+// }
+
+// function send_Token(){
+//     //alert($('#TokenModal_Label').text());
+//     //auth_pin();
+//     var Token="Ethereum";
+//     if($('#TokenModal_Label').text() == "SECRET")  {
+//         Token = 'SECRET';
+//         $("#sendToken_Icon").attr('src','/img/icon-secret.png');
+//         $("#sendToken_Balance").val($('#TokenModal_Balance').val());
+//     }
+//     else {
+//         Token = 'Ethereum';
+//         $("#sendToken_Balance").val($('#TokenModal_Balance').val());
+//         $("#sendToken_Icon").attr('src','/img/icon-ethereum.png');
+//     }
+
+//     $('#sendToken_title').text('Send '+Token+'...') ;
+//     $("#sendToken_Label").text(Token);
+
+//     $('#sendModal').modal({
+//         backdrop: 'static',
+//         keyboard: false,
+//         'show':true});    
+// }
+
+// function TOKEN_DETAIL(TOKEN){
+//     $("#TokenModal_title").text(TOKEN+" Details...");
+//     $("#TokenModal_Label").text(TOKEN);
+//     if (TOKEN=='SECRET'){
+//         $("#TokenModal_Balance").val($('#SECRET_Balance').val());
+//         $("#TokenModal_Icon").attr('src','/img/icon-secret.png');
+//     }
+//     else {
+//         $("#TokenModal_Balance").val($('#Ethereum_Balance').val());
+//         $("#TokenModal_Icon").attr('src','/img/icon-ethereum.png');
+
+//     }
+
+//     $('#TokenModal').modal({
+//         backdrop: 'static',
+//         keyboard: false,
+//         'show':true});
+// }
+//custom function handler
+// function register_user(aa){
+//     // check register form data;
+//     //alert(aa);
+//     $('#r2-email').val($('#r-email').val());
+
+//     $('#AuthModal').modal({
+//         backdrop: 'static',
+//         keyboard: false,
+//         'show':true});
+// }
+// function auth_pin(){
+//     //$('#AuthModal').modal("hide");
+//     // $('#pincode-input1').pincodeInput().data('plugin_pincodeInput').clear();
+//     // $('#pincode-input2').pincodeInput().data('plugin_pincodeInput').clear();
+//     $('#pinModal').modal({
+//         backdrop: 'static',
+//         keyboard: false,
+//         'show':true
+//     });
+//     $('#loginpin').focus(0);
+
+// }
+
+// $(function(){
+			
+    // ---- Single pincode input -----
+
+//     var loginpin = $('#loginpin').pinlogin({
+//         fields : 6,
+        
+//         complete : function(pin){
+//             if(pin=='123456'){
+//                 alert ('Awesome! You entered: ' + pin);
+//                 $('#pinModal').modal('hide');
+//                 location.href="http://192.168.2.34/main.html";
+//             } else {
+//                 alert ('PIN Code is not matched!!!: ' + pin);                
+//             }
+            
+//             // reset the inputs
+//             loginpin.reset();
+            
+//             // disable the inputs
+//             //loginpin.disable();
+            
+//             // further processing here
+//         },
+        
+//         /* Additional callbacks */
+//         /*
+//         invalid : function (field, nr)
+//         {
+//             console.log (nr + ' is invalid');
+//         },
+        
+//         keydown : function (e, field, nr)
+//         {
+//             console.log (nr + ' keydown');
+//         },	
+
+//         input : function (e, field, nr)
+//         {
+//             console.log (nr + ' input');
+//         }*/	
+        
+//     });	
+
+//     // ---- Pincode input with retype functionality ----- 
+
+//     var pincode = '';
+//     var registerpin = $('#registerpin').pinlogin({
+//         fields : 6,
+//         placeholder : '*',
+//         reset : false,
+//         //hideinput: false,
+//         autofocus : true,
+//         complete : function(pin){
+
+//             pincode = pin;
+            
+//             // focus repeat instance 
+//             registerpinretype.focus(0);
+            
+//             // disable this instance
+//             //registerpin.disable();					
+//         }	
+//     });
+    
+//     var registerpinretype = $('#registerpinretype').pinlogin({
+//         fields : 6,
+//         placeholder : '*',
+//         reset : false,
+//         //hideinput: false,
+//         autofocus : false,
+//         complete : function(pin){
+            
+//             // compare entered pincodes
+//             if (pincode != pin)
+//             {
+//                 pincode = '';
+                
+//                 // reset both instances
+//                 registerpin.reset();
+//                 registerpinretype.reset();
+                
+//                 // disable repeat instance
+//                 //registerpinretype.disable(); 
+                
+//                 // set focus to first instance again
+//                 registerpin.focus(0);
+                
+//                 alert ('Pincodes do not match, please try again');
+//             }
+//             else
+//             {
+//                 $('#pinModal').modal('hide');
+//                 //alert ('Awesome! You entered: ' + pin);
+//                 // reset both instances
+//                 registerpin.reset();
+//                 registerpinretype.reset(); 
+//                 location.href="http://localhost/main.html";
+
+//                 // disable both instances
+//                 //registerpin.disable();
+//                 //registerpinretype.disable(); 
+                
+//                 // further processing here
+//             }
+//         }
+//     });	
+//     registerpin.focus(0);
+//     // disable repeat instance at start
+//     //registerpinretype.disable();				
+// }); 
+</script>
+
+    
+</body>
+</html>

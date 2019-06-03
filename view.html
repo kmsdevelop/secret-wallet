@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1, shrink-to-fit=no">
+<title>SECRET Wallet</title>
+<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/menu.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<!--link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous"-->
+
+<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script-->
+
+<script src="js/jquery/jquery-3.4.1.min.js"></script>
+<script src="js/bootstrap/bootstrap.min.js"></script>
+
+<script src="js/pincode/jquery.pinlogin.js"></script>
+<link href="css/pincode/jquery.pinlogin.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="js/qrcode/jquery.qrcode.js"></script>
+<script type="text/javascript" src="js/qrcode/qrcode.js"></script>
+
+<script type="text/javascript" src="js/crypto/core.min.js"></script>
+<script type="text/javascript" src="js/crypto/sha256.min.js"></script>
+
+<!--script src="js/slider/bootstrap-slider.js"></script>
+<link href="css/slider/bootstrap-slider.css" rel="stylesheet" type="text/css" /-->
+
+<!--script src=js/wallet-login.js></script-->
+<script src=js/wallet-common.js></script>
+
+<style type="text/css">
+
+</style>
+
+</head>
+<body>
+<script>
+    var pinMatched=0;
+    if (typeof sessionStorage.username == 'undefined') {
+        gotoLoginPage();
+    }      
+    
+    $.urlParam = function(name){
+        var results = new RegExp('[\?&amp;]' + name + '=([^&amp;#]*)').exec(window.location.href);
+        return results[1] || 0;
+    }
+    sessionStorage.currentToken = decodeURIComponent($.urlParam('Token'));
+  
+// // example.com?param1=name&amp;param2=&amp;id=6
+// $.urlParam('Token'); // name
+// $.urlParam('id');        // 6
+// $.urlParam('param2');   // null
+ 
+// //example params with spaces
+// http://www.jquery4u.com?city=Gold Coast
+// console.log($.urlParam('city'));  
+// //output: Gold%20Coast
+ 
+// console.log(decodeURIComponent($.urlParam('city')));  
+// //output: Gold Coast
+
+
+    function Show_SendModal(){
+        //alert($('#TokenModal_Label').text());
+        //auth_pin();
+        //var Token="Ethereum";
+        if(sessionStorage.currentToken == "SECRET")  {
+            //Token = 'SECRET';
+            $("#sendToken_Icon").attr('src','/img/icon-secret.png');
+            $("#sendToken_Balance").val(toCommas(sessionStorage.balance_secret));
+        }
+        else {
+            //Token = 'Ethereum';
+            $("#sendToken_Balance").val(toCommas(sessionStorage.balance_ether));
+            $("#sendToken_Icon").attr('src','/img/icon-ethereum.png');
+        }
+
+        $('#sendToken_title').text('Send '+sessionStorage.currentToken+'...') ;
+        $("#sendToken_Label").text(sessionStorage.currentToken);
+        $("#sendToken_name-Data").text(sessionStorage.email);
+        $("#ADDR_DATA3").text(sessionStorage.address);
+
+        $('#sendModal').modal({
+            backdrop: 'static',
+            keyboard: false,
+            'show':true});    
+            
+    }
+    // function pasteboard2(){
+    //     // textRange = document.body.createTextRange();
+    //     // textRange.moveToElementText(sendToken_Address);
+    //     // textRange.execCommand("paste");
+
+    //     var pasteText = document.querySelector("#sendToken_Address");
+    //     pasteText.focus();
+    //     document.execCommand("paste");
+    //     console.log(pasteText.textContent);
+    //     alert(pasteText.textContent);
+
+    // }   
+    // function pasteboard(name) {
+    //     var obj = eval("document.all." + name);
+    //     var doc = obj.createTextRange();
+    //     alert("11");
+
+    //     doc.select();
+    //     doc.execCommand('paste');
+    // }
+ 
+    //custom function handler
+    $(document).ready(function(){
+
+        // Send2Server("BALANCE-CHECK");
+
+        ////////////////////
+        if (sessionStorage.txYN == 'N'){
+            // $('#button-secret-send').css('display', 'none');
+            // $('#button-ether-send').css('display', 'none');
+            $('#button-secret-send').hide();
+            $('#button-ether-send').hide();            
+        }
+        $('#MAIN_NAME_DATA').text(sessionStorage.email);
+        $('#menu-user-name').text(sessionStorage.username);
+        $('#menu-user').css("display", "inline");
+        if(sessionStorage.currentToken == "SECRET") {
+            $('#SECRET_Balance').val(toCommas(sessionStorage.balance_secret));
+            // $('#ETHER-TOKEN-BALANCE').css("display", "none");
+            $('#ETHER-TOKEN-BALANCE').hide();
+        }
+        else
+        {
+            $('#ETHER_Balance').val(toCommas(sessionStorage.balance_ether));
+            // $('#SECRET-TOKEN-BALANCE').css("display", "none");
+            $('#SECRET-TOKEN-BALANCE').hide();
+        }
+
+        Send2Server("TX-LIST");
+
+        // // var mySlider = $('.silder').slider();
+
+        // var mySlider = $("#AmouontSlider").slider({
+        //     min: 0,                         // minimum possible value
+        //     max: 100,                       // maximum possible value
+        //     step: 1,                        // increment step
+        //     orientation: 'horizontal',      // 'vertical' or 'horizontal'
+        //     tooltip: 'show',                // 'show' or 'hide'
+        //     value: 50,                      // initial value
+        //     handle: 'round',                // handle shape. Accepts: 'round', 'square' or 'triangle'
+        //     selection: 'before'             //
+        // });
+        // $('#AmouontSlider').slider({
+        //   formater: function(value) {
+        //     return 'Current value1: '+value;
+        //   }
+        // });
+        // $("#AmouontSlider").on("slide", function(slideEvt) {
+        //     $("#sendToken_Amount").val(slideEvt.value);
+        // });
+        // // $("#AmouontSlider").on("slide", function(slideEvt) {
+        // //     $("#sendToken_Amount").val(mySlider.slider('getValue'));
+        // // });
+
+
+        // function paste() {
+        //     alert("paste from clipboard");
+        //     // Paste =  document.getElementById('paste');
+        //     // console.log('Paste:' + document.queryCommandSupported('paste'));
+        //     // Paste.addEventListener('click', function(){
+        //     //     console.log('Paste:' + document.queryCommandSupported('paste'));
+        //     // });
+        //     // navigator.clipboard.readText().then(clipText =>
+        //     // document.getElementById("sendToken_Address").innerText = clipText);
+        //     // var pasteText = document.querySelector("#sendToken_Address");
+        //     // pasteText.focus();
+        //     // document.execCommand("paste");
+        //     // console.log(pasteText.textContent);
+        // }
+        // //document.querySelector("#paste").addEventListener("click", paste);
+    
+    }); 
+
+    function Send_Token(){
+        if (sessionStorage.txYN == 'N'){
+            // send_token버튼이 안보일텐데, 혹시나 캐쉬된 사용자가 있을 경우, 대비하여 넣은 코드임. 이미 부팅할 떄, 버튼을 없애서 기능이 이부분이 동작안될 것임.
+            alert("You can not send token, call to administrator");
+            return;
+        }
+        if($("#sendToken_Address").val() == ""){
+            alert("input address");
+            return;
+        }
+        if($("#sendToken_Amount").val() == ""){
+            alert("input amount");
+            return;
+        }
+        var tAmount =  parseInt($("#sendToken_Amount").val());
+        if(sessionStorage.currentToken == "SECRET") {
+            if(parseInt(sessionStorage.balance_secret) <= tAmount) {
+                alert("Input amount is bigger than SECRET Balance");
+                return;
+            }
+        }
+        else{
+            if(parseInt(sessionStorage.balance_ether) <= tAmount) {
+                alert("Input amount is bigger than Ethereum Balance");
+                return;
+            }
+        }
+
+        // $("#sendToken_FROM_Confirm").val(sessionStorage.username+"("+sessionStorage.email+")");
+        $("#sendToken_FROM_Confirm").val(sessionStorage.email);
+        $("#sendToken_Address_Confirm").val($("#sendToken_Address").val());
+        $("#sendToken_Amount_Confirm").val($("#sendToken_Amount").val());
+        $("#confirmSendPin_title").text("Confirm "+sessionStorage.currentToken+ " token sending ");
+        $("#TOKEN_UNIT").text(sessionStorage.currentToken);
+        $('#confirmSendPin').modal({
+            backdrop: 'static',
+            keyboard: false,
+            'show':true
+        });
+        $('#loginpin').focus(0);
+    }
+    function Send_Token_TX(){
+        if( pinMatched !== 1) {
+            alert("PIN Numnber checke first");
+            return;
+        };
+        $("#tokenTx_button").hide();
+        data = {"token": sessionStorage.currentToken, "from_addr": sessionStorage.address, "from_privateKey": sessionStorage.privateKey, "to": $("#sendToken_Address_Confirm").val(), "amount":  $("#sendToken_Amount_Confirm").val() };
+        //.split(",").join("")};
+    
+        //console.log("Token Sent: "+data);
+        sessionStorage.result = "";
+        Send2Server("TOKEN-TX", data);
+        var d = new Date();
+        sessionStorage.tx_time = d;
+        $("#tx_time").text(d.toLocaleString());
+        $("#ShowConfirmPin").hide();
+        $("#WaitingTxResult").show();
+        repeat = setInterval(function(){
+            if( sessionStorage.result !== ""){
+                ret = sessionStorage.result;
+                console.log(ret);
+                console.log(ret.transactionHash);
+                console.log(ret.status);
+
+                clearInterval(repeat);
+
+
+                // $('#confirmSendPin').modal('hide');
+                // gotoMainPage();
+            }
+        },1000);        
+    }
+    
+</script>
+
+<div class="secret-navbar">
+    <nav class="navbar navbar-expand-md navbar-light" >
+        <!--nav class="navbar navbar-expand-md navbar-light bg-light"-->
+        <a href="http://mitmessenger.com" class="navbar-brand">
+            <img src="./img/secret-logo.png" height="25" width="170" alt="SECRET">
+        </a>
+        <a href="#" class="nav-item nav-link active" style="color:#bbbbbb" onClick="gotoMainPage();"><i class="fa fa-home fa-lg" aria-hidden="true" ></i>&nbsp; Home</a>
+
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse" style="color:#ffffff;background-color: #bbbbbb;" >
+            <span class="navbar-toggler-icon" ></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse" >
+            <div class="navbar-nav " style="margin-right: 20px;" >
+                <!--a href="#" class="nav-item nav-link active" style="color:#bbbbbb" onClick="gotoMainPage();"><i class="fa fa-home fa-lg" aria-hidden="true" ></i>&nbsp; Home</a-->
+                <!--a href="#" class="nav-item nav-link" style="color:#bbbbbb">공지사항</a-->
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" style="color:#bbbbbb">Lang</a>
+                    <div class="dropdown-menu  dropdown-menu-right" style="color:#ffbbbb">
+                        <a href="#" class="dropdown-item" onClick="MyLang('eng');">English</a>
+                        <a href="#" class="dropdown-item" onClick="MyLang('kor');">Korea</a>
+                        <a href="#" class="dropdown-item" onClick="MyLang('vet');">Vetenam</a>
+                    </div>
+                </div>
+                <div id="menu-user" class="nav-item dropdown" style="display:none;">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" style="color:#bbbbbb"><i class="fa fa-user "><label id="menu-user-name">@user</label></i></a>
+                    <div class="dropdown-menu  dropdown-menu-right" style="color:#ffbbbb">
+                        <a href="#" class="dropdown-item" >Reset Password</a>
+                        <a href="#" class="dropdown-item" >Reset PIN</a>
+                        <a href="#" class="dropdown-item" onClick="SecretTerms();">Terms and Conditions</a>
+                        <hr>
+                        <a href="#" class="dropdown-item" onClick="logout();" >Logout</a>
+                    </div>
+                </div>
+
+            </div>
+            <!--div class="navbar-nav ml-auto">
+                <a href="#" class="nav-item nav-link"  style="color:#bbbbbb">Login</a>
+            </div-->
+        </div>
+    </nav>
+</div>
+<div class="secret-body" >
+    <div class="d-flex justify-content-center align-items-center container"  >
+        <div class="row" class="panel-dashboard" >
+            <div class="panel-heading col-sm-12" style="text-align: center;background-color: #4285F4">
+                <label id="mywallet-title" style="color: white;font-size:18px;font-weight: bolder;text-align: center;">view my Wallet </label>
+                <button type="button" class="close" onClick="gotoMainPage();">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <!--hr class="col" style="margin:10px; border: 0.3px solid #bbbbbb;"-->
+
+            <div class="panel-body" style="margin-left:0;margin-right:0;margin-top:2px; padding:0;">
+                <div class="row no-gutters" style="padding:5px;margin:0;background-color: #eeeeee;">
+                    <div class="col-sm-12"  style="margin-top:0;margin-left:5px;margin-right:5px;padding:0;">
+                        <div class="row justify-content-between" style="padding:0;margin:0;">
+                            <div >
+                                    <i class="fa fa-user" aria-hidden="true"></i>
+                                    <label id="MAIN_NAME_TITLE" style="margin-right:5px;padding:0;font-size: 18px; font-weight: bold;">e-Mail:</label>
+                                    <label id="MAIN_NAME_DATA" style="margin-right:10px;font-size: 18px;" >user</label>            
+                            </div>
+                            <!--div>
+                                    <i class="fa fa-qrcode mr-auto" aria-hidden="true"  onclick="show_QRCode('#ADDR_DATA');"></i>
+                            </div-->
+                        </div>
+                    </div>
+                </div>
+          
+                <div  class="row" style ="padding:0;margin-top: 5px;margin-left: 5px;margin-right: 5px;">
+                    <div id = "SECRET-TOKEN-BALANCE" class="col-sm-12 input-group" style="margin:0;padding:0;" >
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" style="width:90px">
+                                    <img src="img/icon-secret.png" alt="secret token" style="width:20px;"/>
+                                    <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;" >SECRET</label>
+                                </span>                    
+                            </div>
+                            <input type="text"  id="SECRET_Balance" class="form-control" value="0.00"  style="font-size:20px;font-size:18px;text-align: right;background-color:#fff;" disabled>
+                            <div id = "button-secret-send" class="input-group-append">
+                                <!--span class="input-group-text">3:00</span-->
+                                <button type="button" class="btn btn-primary" style="width:60px;text-align:center;" onclick="Show_SendModal('SECRET');">Send</button>
+                            </div>
+                    </div>
+                    <div id = "ETHER-TOKEN-BALANCE" class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 10px;" >
+                        <div class="input-group-prepend">
+                                <span class="input-group-text" style="width:90px">
+                                    <img src="img/icon-ethereum.png" alt="secret token" style="width:20px;"/><br>
+                                    <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Ethereum</label>
+                                </span>                    
+                            </div>
+                        <input type="text" id="ETHER_Balance" class="form-control"  value="0.00" style="font-size:20px;font-size:18px;text-align: right;background-color:#fff;" disabled>
+                        <div id = "button-ether-send" class="input-group-append">
+                            <button type="button" class="btn btn-dark" style="width:60px;text-align:center;" onclick="Show_SendModal('Ethereum');">Send</button>
+                        </div>
+                    </div>
+                </div> 
+                <div style="display: block;background-color:lightskyblue;padding:0;height:25px;margin-top:10px;">
+                        <label id="COIN-DETAILS" style="margin-left:5px;font-size: 14px; font-weight: bold;">Transaction List</label>
+                        <!--label id="TX-Search" style="margin-right:5px;font-size: 14px; font-weight: bold;float: right;"> Type</label-->
+                </div>
+                <div class="table-responsive-sm">
+                    <table class="table table-sm table-hover table-fixed " style="table-layout: fixed;" id="ID-TxList-TABLE" > 
+                        <thead class="thead-light"><tr>
+                            <th style="width:130px;font-size:10px;text-align:center;" ><i class="fa fa-calendar" aria-hidden="true"><strong> Time</strong></i></th>
+                            <th style="width:130px;font-size:10px;text-align:center;"><i class="fa fa-address-card-o" aria-hidden="true"><strong>Address</strong></i></th>
+                            <th style="width:100px;font-size:10px;text-align:right;"><i class="fa fa-money" aria-hidden="true"><strong>Value</strong></i></th>
+                        </tr></thead>
+                        <tbody id="ID-TxList-TBODY" style="cursor:pointer;"></tbody>
+                    </table>
+                    <!--div style="padding-bottom: 300px;"></div-->
+                </div>
+            </div>
+        </div>
+    </div>
+<br>
+</div>
+<footer class="secret-footer fixed-bottom ">
+
+        <!-- Copyright -->
+        <div class="footer-copyright text-center py-2" style="z-index: 1;">&nbsp;&nbsp;© 2018 Copyright:
+        <a href="http://mitmessenger.com" style="color:#ffffff;">SECRET Messenger</a> <br> ANSON ROAD #23-14S INTERNATIONAL PLAZA SINGAPORE (079903)
+        </div>
+        <!-- Copyright -->
+    
+</footer>
+
+
+ 
+<!-- Modal HTML -->
+
+<div id="sendModal" class="modal fade pin-container" tabindex="-1" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label id="sendToken_title" class="modal-title"style = "text-align:center;">Send Token</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div style="height:10px;background-color:#eeeeee;"></div>
+                <div class="row no-gutters" style="padding:0;margin:0;background-color: #eeeeee;">
+                    <div class="col-sm-12"  style="margin-top:0;margin-left:5px;padding:0;">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        <label id="sendToken_name-Title" style="margin-right:10px;padding:0;font-size: 18px; font-weight: bold;">eMail:</label>
+                        <label id="sendToken_name-Data" style="margin-right:10px;font-size: 18px;" >KMS 홍보관리계정</label>            
+                    </div>
+                    <div class="col-sm-12" style="margin-top:0;margin-left:5px;margin-bottom:10px;padding:0;">
+                        <label id="ADDR_DATA3" style="vertical-align:middle; text-align:center;font-size: 11.5px; font-weight: bold;" alt="touch address to copy">ADDR</label>
+                    </div>
+                </div>
+                
+                <div class="row" style ="padding:0;margin-top: 20px;margin-left: 5px;margin-right: 5px;">
+                    <div class="col-sm-12 input-group" style="margin:0;padding:0;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;">
+                                <img id="sendToken_Icon"  src="img/icon-secret.png" alt="secret token" style="width:20px;"/>
+                                <label id="sendToken_Label" style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">SECRET</label>
+                            </span>                    
+                        </div>
+                        <input id="sendToken_Balance" type="text"   class="form-control" placeholder="12345.7890" value="93224.4089"  style="font-size:18px;text-align: right;background-color:#fff;" disabled>
+                        <!--div class="input-group-append">
+                            <span class="input-group-text">3:00</span>
+                            <button type="button" class="btn btn-primary" style="width:60px;text-align:center;">SEND</button>
+                        </div-->
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px; Height:35px;">
+                                <i class="fa fa-id-badge" aria-hidden="true"></i>
+                                <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Address</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Address" class="form-control" placeholder="put target address"  value="" style="font-size:14px;Height:35px;text-align: right;background-color:#fff;" >
+                    </div>
+                    <!--div class="col-sm-12" style="display:block;text-align:right; font-size:12px; border: 1px solid red;">
+                        <a href="" onClick="pasteboard(sendToken_Address);" >copy from clipboard</a>
+                    </div-->
+
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;font-size:12px;">
+                                <i class="fa fa-money" aria-hidden="true"></i>
+                                <label style="vertical-align:middle; text-align:center;font-size: 10px; font-weight: bold;">Amount</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Amount" class="form-control" placeholder="put amount"  value="" style="font-size:18px;text-align: right;background-color:#fff;" >
+                    </div>
+                    <!--div class="d-flex justify-content-center col-sm-12  my-2">
+                        <span style="width:90px;font-size:12px;"></span>
+                        <input id="AmountSlider" class="slider" style="width:100%;"  data-slider-id='ex1Slider' type="text" data-provide="slider" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-tooltip="show" data-slider-value="50"/>
+                    </div-->
+                                          
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="Send_Token();">Send</button>
+            </div>            
+        </div>
+    </div>
+</div>              
+
+<div id="confirmSendPin" class="modal fade pin-container" tabindex="-99" > 
+    <div class="modal-dialog" style="margin-top:100px;" >
+        <div class="modal-content">
+            <div class="modal-header py-1" style = "background-color: #5a7ae6;color:#ffffff; ">
+                <label ID="confirmSendPin_title" class="modal-title"style = "text-align:center;">Confirm token sending...</label>
+                <!--button type="button" class="close" data-dismiss="modal">&times;</button-->
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="fa fa-sign-out" aria-hidden="false"></i>
+                </button>
+            </div>
+            <div class ="modal-body" >
+                <div>
+                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                    <label id="Confirm_Sending_Title" style="margin-right:10px;font-size: 16px;" >Confirm Sending Information</label>
+                </div>
+                <div class="row" style ="padding:0;margin-top: 0px;margin-left: 5px;margin-right: 5px;">
+                    <div class="col-sm-12 input-group" style="margin:0;padding:0;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;">
+                                <label id="sendToken_Label" style="vertical-align:middle; text-align:center;font-size: 13px; font-weight: bold;">FROM</label>
+                            </span>                    
+                        </div>
+                        <input id="sendToken_FROM_Confirm" type="text"   class="form-control" placeholder="12345.7890" value=""  style="font-size:18px;text-align: right;background-color:#fff;" disabled>
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px; Height:35px;">
+                                <label style="vertical-align:middle; text-align:center;font-size: 14px; font-weight: bold;">TO</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Address_Confirm" class="form-control" placeholder="put target address"  value="" style="font-size:14px;Height:35px;text-align: right;background-color:#fff;" disabled>
+                    </div>
+                    <div class="col-sm-12 input-group" style="padding:0;margin-left:0;margin-right:0;margin-top:10px;margin-bottom: 0px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="width:90px;font-size:12px;">
+                                <label style="vertical-align:middle; text-align:center;font-size: 13px; font-weight: bold;">Amount</label>
+                            </span>                    
+                        </div>
+                        <input type="text" id="sendToken_Amount_Confirm" class="form-control" placeholder="put amount"  value="" style="font-size:18px;text-align: right;background-color:#fff;" disabled >
+                        <div class="input-group-append">
+                            <span class="input-group-text">
+                                <label id="TOKEN_UNIT" style="vertical-align:middle; text-align:center;font-size: 13px; font-weight: bold;">ETHER</label>
+                            </span>
+                            
+                        </div>
+
+                    </div>
+                </div>            
+                <div id="ShowConfirmPin">
+                    <i class="fa fa-pencil-square-o" style="font-size:16px;margin-top:20px;"> Enter your PIN </i>
+                    <div id="loginpin" style="display: flex; justify-content:left;margin-left:5px;margin-top:5px;"></div>
+                    <div id="confirmpin" style="margin-left:10px;display:none;">
+                        <label style="vertical-align:middle; text-align:center;font-size: 20px; color: blue;font-weight: bold;">PIN is confirmed!!!</label>
+                    </div>
+                </div>
+                <div class="row " id="WaitingTxResult" style="display:none;margin-top:20px;">
+                    <div id="before_tx_title" class="col-sm-12" style="display: flex; justify-content:left;" >
+                            <div class="spinner-border spinner-border-sm text-danger" ></div>
+                            <label id="title_text_before" style="font-size: 16px;color:blue;margin-left:10px;">Waitng transaction result</label>
+                    </div>
+                    <div id="after_tx_title" class="col-sm-12" style="display: none; justify-content:left;">
+                            <i class="fa fa-newspaper-o" aria-hidden="true"></i>
+                            <label id="title_text_after" style="font-size: 16px;margin-left:10px;">Transaction result</label>
+                    </div>
+                    <div class="col-sm-12" style="display: flex; justify-content:left;" >
+                        <div class="" style="margin:0;padding:0;"> TIME: </div><label id="tx_time" style="margin-left:10px;padding:0;"></label>
+                    </div>
+                    <div class="col-sm-12" style="display: flex; justify-content:left;" >
+                            <div style="margin:0;padding:0;"> Result: </div><label id="tx_result" style="margin-left:10px;padding:0;"></label>
+                    </div>
+                    <div class="col-sm-12" style="display: flex; justify-content:left;vertical-align:middle;" >
+                        <label id="tx_hash" class="text-truncate" style="width:100%;font-size: 12px;margin-left:10px;padding:0;"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="tokenTx_button">
+                <button id="tokenSend_Cancel"type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button id="tokenSend_Button" type="button" class="btn btn-primary" onclick="Send_Token_TX();" style="display:none;">Send</button>
+                <button id="tokenSend_gotoMain" type="button" class="btn btn-primary" onclick="gotoMainPage();" style="display:none;">goto Main</button>
+            </div>            
+    
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(function(){
+    
+        // ---- Single pincode input -----
+    
+        var loginpin = $('#loginpin').pinlogin({
+            fields : 6,
+            
+            complete : function(pin){
+                //alert ('Awesome! You entered: ' + pin);
+                //sessionStorage.send_Confirm_PIN = encryptStr(pin);
+                if(sessionStorage.pin !== encryptStr(pin) ) {
+                    // console.log("MyPIN: ", sessionStorage.pin);
+                    // console.log("INPUT: ", encryptStr(pin));
+                    alert("PIN numnber is not matched");
+                    loginpin.reset();
+                }else {
+                    pinMatched=1;
+                    //alert("PIN numnber is matched");
+                    $("#tokenSend_Button").css("display", "inline");
+                    $('#loginpin').css("display", "none");
+                    $("#confirmpin").css("display", "block");
+
+                    loginpin.disable();
+                }
+                
+
+                // reset the inputs
+                //loginpin.reset();
+                
+                // disable the inputs
+                //loginpin.disable();
+                
+                // further processing here
+            },
+            
+            /* Additional callbacks */
+            /*
+            invalid : function (field, nr)
+            {
+                console.log (nr + ' is invalid');
+            },
+            
+            keydown : function (e, field, nr)
+            {
+                console.log (nr + ' keydown');
+            },	
+
+            input : function (e, field, nr)
+            {
+                console.log (nr + ' input');
+            }*/	
+            
+        });	
+    });
+</script>
+
+    
+</body>
+</html>

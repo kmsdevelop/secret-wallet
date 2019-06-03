@@ -1,0 +1,49 @@
+
+.secret-navbar{
+    margin: 0;
+    /*background-color: #C1D1E1;*/
+}
+.navbar {
+    background-color: #000000;
+}
+.dropdown-menu {
+/*background-color: var(--dark-gray);*/
+background-color: rgb(188, 188, 192);
+border-top: 1px solid white;
+border-right: 1px solid white;
+border-left: 1px solid white;
+border-bottom: 1px solid white;
+color : #000000;
+
+}
+.dropdown-item:hover {
+    background-color: var(--gray);
+}
+
+.dropdown-toggle.active {
+    background-color: #ffffff;
+}
+
+.dropdown-toggle:active, .open .dropdown-toggle,.dropdown-toggle:focus {
+    background-color: #bbbbbb !important;
+    color: black !important;
+}
+
+body {
+        /*background-color :#e4a000;*/
+        background-image: url('../img/secret2.jpg') ;
+        background-repeat: no-repeat;
+        -webkit-background-size:cover;
+        -moz-background-size:cover;
+        -o-background-size:cover;
+        background-size: cover;
+        background-position: center bottom;
+        background-attachment: fixed;
+        height:700px;
+
+} 
+
+.secret-footer{
+    background-color: #000000;
+    color: #ffffff;
+}
